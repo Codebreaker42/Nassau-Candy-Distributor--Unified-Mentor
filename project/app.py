@@ -326,25 +326,49 @@ fig = px.scatter(
 
 st.plotly_chart(fig, use_container_width=True)
 
-# Margin Risk Detection
+# ====================================================
+# MARGIN RISK PRODUCTS (PRODUCT LEVEL)
+# ====================================================
 
-risk_df = filtered_df[
-    filtered_df['Gross Margin %'] < margin_threshold
+risk_df = (
+
+    filtered_df.groupby(
+        ['Product Name', 'Division']
+    )
+
+    .agg({
+        'Sales':'sum',
+        'Gross Profit':'sum'
+    })
+
+    .reset_index()
+)
+
+# Recalculate Margin %
+
+risk_df['Gross Margin %'] = (
+    risk_df['Gross Profit']
+    /
+    risk_df['Sales']
+) * 100
+
+# Apply Risk Threshold
+
+risk_df = risk_df[
+    risk_df['Gross Margin %'] < margin_threshold
 ]
+
+# Sort by Lowest Margin
+
+risk_df = risk_df.sort_values(
+    by='Gross Margin %'
+)
+
+# Display
 
 st.subheader("⚠️ Margin Risk Products")
 
-st.dataframe(
-    risk_df[
-        [
-            'Product Name',
-            'Division',
-            'Sales',
-            'Gross Profit',
-            'Gross Margin %'
-        ]
-    ].sort_values(by='Gross Margin %')
-)
+st.dataframe(risk_df)
 
 # Cost Heavy Products
 
