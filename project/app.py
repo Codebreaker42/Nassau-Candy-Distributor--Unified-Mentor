@@ -148,7 +148,7 @@ st.markdown(
 # =========================
 
 st.subheader("📌 Business KPI Overview")
-st.write(filtered_df['Sales'].sum())
+# st.write(filtered_df['Sales'].sum())
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -351,21 +351,28 @@ st.dataframe(
 st.subheader("💰 Cost Heavy Products")
 
 cost_heavy = (
-    filtered_df.sort_values(by='Cost', ascending=False)
+    
+    filtered_df.groupby(
+        ['Product Name', 'Division']
+    )
+    
+    .agg({
+        'Cost':'sum',
+        'Sales':'sum',
+        'Gross Profit':'sum'
+    })
+    
+    .reset_index()
+    
+    .sort_values(
+        by='Cost',
+        ascending=False
+    )
+    
     .head(10)
 )
 
-st.dataframe(
-    cost_heavy[
-        [
-            'Product Name',
-            'Division',
-            'Cost',
-            'Sales',
-            'Gross Profit'
-        ]
-    ]
-)
+st.dataframe(cost_heavy)
 
 # =========================================================
 # MODULE 4 — PARETO DASHBOARD
